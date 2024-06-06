@@ -6,7 +6,7 @@
 
 <div align="center"> 
 
-<img alt="Lightning" src="img/banner.png" width="800px" style="max-width: 100%;">
+<img alt="cubyc" src="https://raw.githubusercontent.com/cubyc-dev/cubyc/main/img/banner.png" width="800px" style="max-width: 100%;">
 
 <br/>
 <br/>
