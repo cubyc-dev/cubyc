@@ -49,7 +49,7 @@ Start tracking your experiments:
 import numpy as np
 from cubyc import Run
 
-@Run(tags=["linear_algebra"], remote="https://github.com/owner/project.git")
+@Run(tags=["linear_algebra"])
 def matrix_multiplication(n_size: int):
     A = np.random.rand(n_size, n_size)
     B = np.random.rand(n_size, n_size)
