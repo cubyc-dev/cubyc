@@ -76,7 +76,12 @@ def login(
     """
     Saves the access token for the specified repository hosting platform in the system keyring.
     """
-    keyring.set_password("cubyc", platform, token)
+    if keyring.get_password("cubyc", platform.value) is None:
+        keyring.set_password("cubyc", platform.value, token)
+    else:
+        keyring.delete_password("cubyc", platform.value)
+        keyring.set_password("cubyc", platform.value, token)
+
     if platform == "github":
         color = "#2dba4e"
     elif platform == "gitlab":
