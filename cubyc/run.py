@@ -8,7 +8,7 @@ import os
 import subprocess
 import textwrap
 import traceback
-from typing import Callable, Union, Dict, Tuple, List, Set, Optional
+from typing import Union, Dict, Tuple, List, Set, Optional
 
 import fasteners
 import pandas as pd
@@ -150,7 +150,7 @@ class Run(BaseModel, extra=Extra.allow):
         self.remotes = set() if remote is None else {remote} if isinstance(remote, str) else remote
         self.remotes |= {remote.url for remote in self.repo.remotes}
         self._verbose = verbose
-        self._lock = fasteners.InterProcessLock(self._repo_path(".cubyc/lock.file"))
+        self._lock = fasteners.InterProcessLock(self._repo_path(".cubyc/.lock.file"))
         self._function = None
         self._function = None
         self._lineno_start = None
@@ -177,9 +177,6 @@ class Run(BaseModel, extra=Extra.allow):
             self._lineno_end = -1
         elif self._lineno_end is None:
             self._lineno_end = traceback.extract_stack()[0].lineno
-
-        # self._csv_file.flush()
-        # self._csv_file.close()
 
         with self._lock:
             code = textwrap.dedent("\n".join(self._source_code.split("\n")[self._lineno_start:self._lineno_end]))
@@ -225,9 +222,8 @@ class Run(BaseModel, extra=Extra.allow):
                     url = remote.strip(".git")
 
                     try:
-                        subprocess.run(["git", "push", "--set-upstream", remote, branch, '-q'],
-                                       cwd=self.repo.working_dir,
-                                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        subprocess.run(["git", "push", "--set-upstream", remote, branch, '-q'], check=True,
+                                       cwd=self.repo.working_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
                         if domain == "github":
                             url += f"/tree/{hexsha}"
@@ -348,8 +344,6 @@ class Run(BaseModel, extra=Extra.allow):
 
         for k, v in {**variables, **kwargs}.items():
             self._logs.append((timestamp, k, v))
-            # self._csv_writer.writerow([timestamp, k, v])
-        # self._csv_file.flush()
 
     @staticmethod
     def _trace_file_lineno(file: str) -> Tuple[Optional[str], Optional[int]]:
