@@ -314,7 +314,10 @@ def get_repo_url_details(url: str) -> Tuple[Union[str, Any]]:
     tuple
         A tuple containing the domain, owner, and repository name.
     """
-    pattern = re.compile(r'https?://(?:[^@]+@)?(github|gitlab|bitbucket)\.[^/]+/([^/]+)/([^/.]+)')
+    if url.startswith('https'):
+        pattern = re.compile(r'https?://(?:[^@]+@)?(github|gitlab|bitbucket)\.[^/]+/([^/]+)/([^/.]+)')
+    else:
+        pattern = re.compile(r'^git@([^.]+)\.com:([^/]+)/([^/.]+)\.git$')
     match = pattern.match(url)
     if match:
         return match.groups()
