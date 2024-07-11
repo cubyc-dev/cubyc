@@ -7,6 +7,7 @@ import aiohttp
 import duckdb
 import keyring
 import pandas as pd
+from git import Repo
 
 from .query_engine.local_query_engine import LocalQueryEngine
 from .query_engine.remote_query_engine import GitHubQueryEngine, BitbucketQueryEngine, GitLabQueryEngine
@@ -88,6 +89,11 @@ def query(
 
     loop = asyncio.get_event_loop()
 
+    if branch == "all" or branch is None:
+        branch = Repo(path=utils.get_caller_path()).active_branch.name
+    elif branch in ("main", "master"):
+        raise ValueError("Can only query branches other than 'main' or 'master'.")
+
     coroutine = _get_tables(path=path or os.getcwd(),
                             exclude_config=exclude_config,
                             exclude_metadata=exclude_metadata,
@@ -157,11 +163,6 @@ async def _get_tables(
         connector = aiohttp.TCPConnector(ssl=False)
         token = keyring.get_password("cubyc", domain)
         headers = {"Authorization": f"Bearer {token}", "User-Agent": "Cubyc", "Accept": "application/json"}
-
-        if branch == "all":
-            branch = None
-        elif branch in ("main", "master"):
-            raise ValueError("Can only query branches other than 'main' or 'master'.")
 
         async with aiohttp.ClientSession(connector=connector, headers=headers) as session:
 

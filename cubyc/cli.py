@@ -103,6 +103,19 @@ def query(
     """
     Queries a remote or local repository and prints the results to the console.
     """
+
+    if branch == "all":
+        try:
+            # Run the git command to get the current branch name
+            result = subprocess.run(['git', 'rev-parse', '--abbrev-ref', 'HEAD'], stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, text=True, check=True)
+            # The branch name will be in result.stdout
+            branch = result.stdout.strip()
+
+        except subprocess.CalledProcessError as e:
+            raise typer.BadParameter(
+                "Could not determine the current branch name. Please specify a branch name manually.")
+
     print(tabulate(cubyc_query(path=path, statement=statement, branch=branch), headers='keys', tablefmt='psql'))
 
 
