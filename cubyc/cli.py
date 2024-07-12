@@ -96,9 +96,10 @@ def login(
 def query(
         statement: Annotated[str, typer.Argument(help="SQL query statement to execute")],
         path: Annotated[Optional[str], typer.Option("--path", "-p",
-                                                    help="Local path or remote URL of the repository to query")] = None,
+                                                    help="Local path or remote URL of the repository to query")] = '.',
         branch: Annotated[
-            Optional[str], typer.Option("--branch", "-b", help="Branch of the repository to query")] = "all"
+            Optional[str], typer.Option("--branch", "-b", help="Branch of the repository to query")] = "all",
+        pretty: Annotated[bool, typer.Option("--pretty", "-p", help="Prettify the output with tabulation")] = False
 ) -> None:
     """
     Queries a remote or local repository and prints the results to the console.
@@ -116,7 +117,12 @@ def query(
             raise typer.BadParameter(
                 "Could not determine the current branch name. Please specify a branch name manually.")
 
-    print(tabulate(cubyc_query(path=path, statement=statement, branch=branch), headers='keys', tablefmt='psql'))
+    query = cubyc_query(path=path, statement=statement, branch=branch)
+
+    if pretty:
+        print(tabulate(cubyc_query(path=path, statement=statement, branch=branch), headers='keys', tablefmt='psql'))
+    else:
+        print(query)
 
 
 if __name__ == "__main__":

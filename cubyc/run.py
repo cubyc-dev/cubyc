@@ -180,8 +180,10 @@ class Run(BaseModel, extra=Extra.allow):
 
         with self._lock:
             code = textwrap.dedent("\n".join(self._source_code.split("\n")[self._lineno_start:self._lineno_end]))
+
             metadata = self._get_metadata(code)
             branch = self.repo.active_branch.name
+
             code_ast = utils.ast_to_json(utils.IgnorePrintTransformer().visit(ast.parse(code)))
 
             if branch == "main" or (os.path.exists(self._repo_path(".cubyc/ast.json")) and len(
@@ -252,7 +254,7 @@ class Run(BaseModel, extra=Extra.allow):
 
         def wrapper(*args, **kwargs):
             # Adds function arguments to the parameter dictionary
-            self._params = {**self._params, **kwargs, **{k: v for k, v in zip(func_args, args)}}
+            self._params = {**self._params, **kwargs, **{k: v for k, v in zip(func_args, map(utils.serialize, args))}}
 
             with self:
                 result = func(*args, **kwargs)
