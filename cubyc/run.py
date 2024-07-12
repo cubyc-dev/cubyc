@@ -34,6 +34,7 @@ class Run(BaseModel, extra=Extra.allow):
             params: Optional[dict] = None,
             tags: Optional[Union[List[str], Tuple[str], Set[str]]] = None,
             remote: Optional[Union[str, List[str], Set[str]]] = None,
+            branch: Optional[str] = None,
             verbose: bool = True,
     ):
         """
@@ -49,6 +50,9 @@ class Run(BaseModel, extra=Extra.allow):
         remote : str, list, or set, optional
             The URL or list of URLs of the remote repositories to save the experiment to.
             Must be valid GitHub, GitLab, or Bitbucket URL for which you have write access.
+        branch: str, optional
+            The explicit name of the new branch created to save the experiment to.
+            If None, a random adjective-noun pair is used.
         verbose : bool, optional
             If True, prints detailed information about the experiment run.
 
@@ -149,6 +153,7 @@ class Run(BaseModel, extra=Extra.allow):
 
         self.remotes = set() if remote is None else {remote} if isinstance(remote, str) else remote
         self.remotes |= {remote.url for remote in self.repo.remotes}
+        self.branch = branch
         self._verbose = verbose
         self._lock = fasteners.InterProcessLock(self._repo_path(".cubyc/.lock.file"))
         self._function = None
@@ -188,7 +193,7 @@ class Run(BaseModel, extra=Extra.allow):
                     utils.get_changes(utils.load_json(self._repo_path(".cubyc/ast.json")), code_ast))):
 
                 # creates a new branch from main
-                branch = Run._get_random_branch_name()
+                branch = Run._get_random_branch_name() if self.branch is None else self.branch
                 subprocess.check_output(["git", "checkout", "-b", branch, "-q"], cwd=self.repo.working_dir)
                 commit_message = "Code change"
             elif os.path.exists(self._repo_path(".cubyc/config.yaml")):
