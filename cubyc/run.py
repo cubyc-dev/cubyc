@@ -168,6 +168,7 @@ class Run(BaseModel, extra=Extra.allow):
                 self._source_code = "".join(file.readlines())
 
         self._timestamp = datetime.datetime.now()
+        self._logs = []
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -258,11 +259,10 @@ class Run(BaseModel, extra=Extra.allow):
 
             with self:
                 result = func(*args, **kwargs)
-
-            if result is not None and hasattr(result, "__iter__"):
-                for variables in result:
-                    if isinstance(variables, dict):
-                        self.log(variables=variables)
+                if result is not None and hasattr(result, "__iter__"):
+                    for variables in result:
+                        if isinstance(variables, dict):
+                            self.log(variables=variables)
 
         return wrapper
 
