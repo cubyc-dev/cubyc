@@ -87,7 +87,14 @@ def query(
         log.error("Comments table can only be queried from remote repositories.")
         exit()
 
-    loop = asyncio.get_event_loop()
+
+    # check if asyncio event loop is already running
+
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
 
     if branch == "all" or branch is None:
         branch = Repo(path=utils.get_caller_path()).active_branch.name

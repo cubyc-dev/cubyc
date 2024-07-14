@@ -358,7 +358,7 @@ def get_caller_path():
 
     path = os.path.abspath("")
 
-    if not is_running_in_notebook():
+    if not is_running_in_notebook() and not is_running_in_streamlit():
         # Get the current frame
         current_frame = inspect.currentframe()
 
@@ -393,3 +393,19 @@ def is_running_in_notebook() -> bool:
         return False
 
     return 'IPKernelApp' in ipython.config
+
+
+def is_running_in_streamlit() -> bool:
+    """
+    Check if the code is running in a Streamlit app.
+
+    Returns
+    -------
+    bool
+        True if running in a Streamlit app, False otherwise.
+    """
+    try:
+        import streamlit.runtime.scriptrunner.script_run_context
+        return True
+    except ImportError:
+        return False
